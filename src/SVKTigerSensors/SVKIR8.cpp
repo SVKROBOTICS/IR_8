@@ -1,4 +1,4 @@
-#include <SVKTigerSensors.h>
+#include <SVKIR8.h>
 
 #include <Arduino.h>
 #include <stdint.h>
@@ -6,8 +6,22 @@
 
 #define DEBUG_MODE 0
 
+// Default constructor - uses default multiplexer pins
+SVKIR8::SVKIR8()
+{
+    // Initialize with default multiplexer pins
+    setMultiplexerPins();
+}
+
+// Overloaded constructor with custom multiplexer pins
+SVKIR8::SVKIR8(const uint8_t *pins)
+{
+    // Initialize with custom multiplexer pins
+    setMultiplexerPins(pins);
+}
+
 /// @brief Sets Default Multiplexer pins for typical SVK Tiger Robot
-void SVKTigerSensors::setMultiplexerPins()
+void SVKIR8::setMultiplexerPins()
 {
     // sets up the pinModes for digital signal pins of multiplexer (first 3 pins)
     pinMode(_muxPins[0], OUTPUT);
@@ -20,7 +34,7 @@ void SVKTigerSensors::setMultiplexerPins()
 
 /// @brief Overloaded method for custom multiplexer pins, rarely needed only if someone changed the pins manually on PCB
 /// @param pins new multiplexer pins in an array
-void SVKTigerSensors::setMultiplexerPins(const uint8_t *pins) {
+void SVKIR8::setMultiplexerPins(const uint8_t *pins) {
     // Override the default _muxPins with the provided pins array
     for (uint8_t i = 0; i < 4; i++) {
         _muxPins[i] = pins[i];  // Copy values from the input array to _muxPins
@@ -35,7 +49,7 @@ void SVKTigerSensors::setMultiplexerPins(const uint8_t *pins) {
     _calibration.initialized = false;
 }
 
-void SVKTigerSensors::setSamplesPerSensor(uint8_t samples)
+void SVKIR8::setSamplesPerSensor(uint8_t samples)
 {
     if (samples > 64) { samples = 64; }
     _samplesPerSensor = samples;
@@ -50,14 +64,13 @@ void SVKTigerSensors::setSamplesPerSensor(uint8_t samples)
     }
 }
 
-
-void SVKTigerSensors::calibrate()
+void SVKIR8::calibrate()
 {
     if(!_calibrateOn) { return; }
     calibratePrivate();
 }
 
-void SVKTigerSensors::resetCalibration()
+void SVKIR8::resetCalibration()
 {
   for (uint8_t i = 0; i < _sensorAmount; i++)
   {
@@ -66,12 +79,12 @@ void SVKTigerSensors::resetCalibration()
   }
 }
 
-void SVKTigerSensors::read()
+void SVKIR8::read()
 {
     readPrivate();
 }
 
-void SVKTigerSensors::readCalibrated()
+void SVKIR8::readCalibrated()
 {
     if(!_calibration.initialized)
     {
@@ -109,12 +122,12 @@ void SVKTigerSensors::readCalibrated()
     }
 }
 
-uint16_t SVKTigerSensors::readLineBlack()
+uint16_t SVKIR8::readLineBlack()
 {
     return readLinesPrivate();
 }
 
-void SVKTigerSensors::selectChannel(uint8_t sensorNum)
+void SVKIR8::selectChannel(uint8_t sensorNum)
 {
     // Truth table for the multiplexer signal pins
     const uint8_t muxPinLayout[] = { 0b110, 0b111, 0b011, 0b010, 0b001, 0b100, 0b000, 0b101 };
@@ -122,14 +135,13 @@ void SVKTigerSensors::selectChannel(uint8_t sensorNum)
     // Get the channel configuration for the specified sensor
     uint8_t channelBits = muxPinLayout[sensorNum];
 
-    // PORTD: Clear bits 7, 4, and 2, then set according to channelBits (lower 3 bits)
-    PORTD &= ~( (1 << 7) | (1 << 4) | (1 << 2) ); // Clear bits 7, 4, and 2
-    PORTD |= ((channelBits & 0b111) << 2);        // Set bits 7, 4, and 2 based on channelBits
+    // Write each bit to the corresponding digital pin
+    for (uint8_t i = 0; i < 3; i++) {
+        digitalWrite(_muxPins[i], (channelBits >> i) & 0x01);
+    }
 }
 
-
-
-void SVKTigerSensors::calibratePrivate()
+void SVKIR8::calibratePrivate()
 {
     uint16_t maxSensorValues[_sensorAmount];
     uint16_t minSensorValues[_sensorAmount];
@@ -187,7 +199,7 @@ void SVKTigerSensors::calibratePrivate()
 }
 
 
-void SVKTigerSensors::readPrivate()
+void SVKIR8::readPrivate()
 {
 
     memset(_sensorValues, 0, sizeof(_sensorValues));
@@ -214,7 +226,7 @@ void SVKTigerSensors::readPrivate()
 
 }
 
-uint16_t SVKTigerSensors::readLinesPrivate()
+uint16_t SVKIR8::readLinesPrivate()
 {
     uint8_t onLineFlag = 0; // Flag to track if any line is detected, 0 = no line, 1 = line detected
     uint32_t avg = 0;       // This is for the weighted total

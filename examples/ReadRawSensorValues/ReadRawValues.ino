@@ -1,51 +1,51 @@
-#include <SVKTigerSensors.h>;
+#include <SVKIR8.h>
 
-/***
- * This is an example code for reading Raw Values from the SVKLine Follow robot created by
- * SVKRobotics. This robot controls and reads the IR Sensors using a 8-1 Multiplexer, that we use
- * 3 Signal Digital Pins to control what sensor is to be read, and then the Multiplexer Output to
- * read the analog value of each sensor.
+/**
+ * SVK IR 8 Sensor Array - Raw Value Reading
  * 
+ * Reads raw analog values (0-1023) from an 8-channel IR sensor array via multiplexer.
  * 
- * Inside the Main loop the program will read the values of the black line while using the raw
- * values. The sensors will print to the serial monitor the values it's
- * currently seeing, which will be a number from 0 (maximum reflectance) to 1023(minimum reflectance) for
- * each sensor. That means 0 for white background and 1023 for the center of the black line.
+ * Features:
+ * - Reads uncalibrated sensor values (0 = max reflectance, 1023 = min reflectance)
+ * - Uses 3 digital control pins + 1 analog read pin
+ * - Prints tab-separated values for all 8 sensors
  * 
- * 
-*/
+ * Note: For custom pin configuration, use:
+ * sensors.setMultiplexerPins({S2_pin, S1_pin, S0_pin, analog_pin});
+ */
 
+SVKIR8 sensors;  // Using the correct class name
 
-SVKTigerSensors sensors;
-
-
-const uint8_t sensorCount = sensors.getSensorAmount();
-uint16_t* sensorValues = nullptr;
-
+const uint8_t sensorCount = 8;  // Fixed for 8 sensors
+uint16_t sensorValues[8];       // Fixed-size array instead of pointer
 
 void setup()
 {
-    sensors.setMultiplexerPins();
+    // Set you multiplexer pins here (These pins are example pins)
+    const uint8_t muxPins[4] = {0, 1, 2, A0};
+    sensors.setMultiplexerPins(muxPins);
+    
     Serial.begin(9600);
+    Serial.println("SVK IR Sensor Array - Raw Mode");
+    Serial.println("Reading uncalibrated values (0-1023)");
+    Serial.println("-----------------------------------");
 }
-
 
 void loop()
 {
-    // Read Raw Analog values from sensors
-    sensors.read();
-
-    // Store Sensor values array to variable
-    sensorValues = sensors.getSensorValues();
-
-    // Print the sensor values as numbers from 0 to 1023, where 0 means maximum
-    // reflectance and 1023 means minimum reflectance
-    for (uint8_t i = 0; i < sensorCount; i++)
-    {
+    // Read raw analog values (0-1023)
+    sensors.read();  // Uses readPrivate() internally
+    
+    // Get current sensor values
+    uint16_t* currentValues = sensors.getSensorValues();
+    memcpy(sensorValues, currentValues, sizeof(sensorValues));
+    
+    // Print all sensor values (tab-separated)
+    for (uint8_t i = 0; i < sensorCount; i++) {
         Serial.print(sensorValues[i]);
         Serial.print('\t');
     }
-    Serial.println();
-
-    delay(500);
+    Serial.println();  // New line after each complete reading
+    
+    delay(500);  // Adjust delay as needed for your application
 }

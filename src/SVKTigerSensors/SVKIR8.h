@@ -1,26 +1,26 @@
 /// Header file for reading IR Follow Line Sensors using multiplexer in SVK Robotics Line Follow Robot
 #pragma once
 
-
 /// @brief Class for reading IR values using Multiplexer
-class SVKTigerSensors {
+class SVKIR8 {
     public:
-        /// @brief Class Constructor
-        SVKTigerSensors() = default;
+        /// @brief Default constructor - uses default multiplexer pins
+        SVKIR8();
+        
+        /// @brief Overloaded constructor with custom multiplexer pins
+        /// @param pins Array of 4 pins (3 digital signal pins + 1 analog input pin)
+        SVKIR8(const uint8_t *pins);
 
-        /// @brief Class Destructor
-        ~SVKTigerSensors() = default;
-
-        /// @brief Returns number of IR Sensors in the program
-        /// @return Number of IR Sensors
-        uint8_t getSensorAmount() const { return _sensorAmount; }
-
-        /// @brief Sets Multiplexer 3 Digital Signal pins and Multiplexer Analog Output pin.
+        /// @brief Sets Multiplexer 3 Digital Signal pins and Multiplexer Analog Output pin using default pins.
         void setMultiplexerPins();
+
+        /// @brief Sets custom multiplexer pins
+        /// @param pins Array of 4 pins (3 digital signal pins + 1 analog input pin)
+        void setMultiplexerPins(const uint8_t *pins);
 
         /// @brief Returns the whole sensor value array read from each sensor via pointer. WARNING do not modify any values, as pointer is showing to _sensorValues address and will alter any values saved!
         /// @return Pointer pointing to _sensorValues array to be viewed in main program, (USE AS READ ONLY).
-        u_int16_t* getSensorValues() { return _sensorValues; }
+        uint16_t* getSensorValues() { return _sensorValues; }
 
         /// @brief Sets number of analog readings to average per analog sensor. WARNING for best performance, number of samples SHOULD BE a power of 2 (for example 1, 2, 4, 8 etc...).
         /// @param samples Number of samples
@@ -49,9 +49,9 @@ class SVKTigerSensors {
             /// @brief checks whether array pointers have been allocated and initialized
             bool initialized = false;
             /// @brief Minimum reading read during calibration
-            uint16_t minimum[_sensorAmount];
+            uint16_t minimum[8];
             /// @brief Maximum reading read during calibration
-            uint16_t maximum[_sensorAmount];
+            uint16_t maximum[8];
         };
 
         /// @brief Calibration data
@@ -79,10 +79,10 @@ class SVKTigerSensors {
         static const uint8_t _sensorAmount = 8;
 
         // Multiplexer signal pins and output pin
-        static const uint8_t _muxPins = { 7, 4, 2, A7};
+        uint8_t _muxPins[4] = { 7, 4, 2, A7 };
 
         // Array of sensor values
-        uint16_t _sensorValues[_sensorAmount];
+        uint16_t _sensorValues[8];
 
         // checks if calibration is on and should the robot calibrate or not
         bool _calibrateOn = true;
