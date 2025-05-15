@@ -1,6 +1,9 @@
 /// Header file for reading IR Follow Line Sensors using multiplexer in SVK Robotics Line Follow Robot
 #pragma once
 
+#include <Arduino.h>
+
+
 /// @brief Class for reading IR values using Multiplexer
 class SVKIR8 {
     public:
