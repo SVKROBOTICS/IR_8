@@ -49,6 +49,7 @@ void SVKIR8::setMultiplexerPins(const uint8_t *pins) {
     _calibration.initialized = false;
 }
 
+// Since log2 doesnt exist in AVR processors, we are using integer representation of log2 using shifting
 void SVKIR8::setSamplesPerSensor(uint8_t samples)
 {
     if (samples > 64) { samples = 64; }
@@ -56,10 +57,14 @@ void SVKIR8::setSamplesPerSensor(uint8_t samples)
 
     // Check if _samplesPerSensor is a power of 2
     if ((_samplesPerSensor & (_samplesPerSensor - 1)) == 0) {
-        // Calculate log2(_samplesPerSensor) to get the shift amount
-        _shiftAmount = log2(_samplesPerSensor);
+        // Integer version of log2
+        uint8_t shift = 0;
+        uint8_t temp = _samplesPerSensor;
+        while (temp >>= 1) {
+            shift++;
+        }
+        _shiftAmount = shift;
     } else {
-        // Set to 0 or another indicator if not a power of 2
         _shiftAmount = 0;
     }
 }
