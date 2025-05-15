@@ -2,6 +2,7 @@
 #pragma once
 
 #include <Arduino.h>
+#include <math.h>
 
 
 /// @brief Class for reading IR values using Multiplexer

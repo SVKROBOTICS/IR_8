@@ -191,7 +191,7 @@ void SVKIR8::calibratePrivate()
         }
 
         // Update the minimum if the current max value was lower than the previously recorded min
-        if (maxSensorValues[i] < calibration.minimum[i])
+        if (maxSensorValues[i] < _calibration.minimum[i])
         {
             _calibration.minimum[i] = maxSensorValues[i];
         }
@@ -217,7 +217,7 @@ void SVKIR8::readPrivate()
     for (uint8_t i = 0; i < _sensorAmount; i++) {
         if (_shiftAmount > 0) {
             // Use bit-shift averaging for power-of-2 values
-            _sensorValues[i] = (_sensorValues[i] + (1 << (shiftAmount - 1))) >> _shiftAmount;
+            _sensorValues[i] = (_sensorValues[i] + (1 << (_shiftAmount - 1))) >> _shiftAmount;
         } else {
             // Fall back to division for non-power-of-2 values
             _sensorValues[i] = (_sensorValues[i] + (_samplesPerSensor >> 1)) / _samplesPerSensor;
